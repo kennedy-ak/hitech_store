@@ -1,0 +1,36 @@
+# Django Framework
+Django==5.2.4
+
+# Environment Management
+python-decouple==3.8
+
+# Image Processing (for profile pictures and product images)
+Pillow==10.0.0
+
+# HTTP Requests (for Paystack API)
+requests==2.31.0
+
+# Database Adapter (for PostgreSQL - optional)
+psycopg2-binary==2.9.7
+
+# Security
+django-cors-headers==4.3.0
+
+# Development Tools (optional)
+django-debug-toolbar==4.2.0
+
+# Production Server (optional)
+gunicorn==21.2.0
+whitenoise==6.5.0
+
+# Testing (optional)
+coverage==7.3.0
+
+# Date/Time utilities
+python-dateutil==2.8.2
+
+# JSON Web Token (if needed for API)
+PyJWT==2.8.0
+
+# Utilities
+six==1.16.0

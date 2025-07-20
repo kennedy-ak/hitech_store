@@ -1,0 +1,155 @@
+{% extends 'store/base.html' %}
+
+{% block title %}Checkout - HiTech Store{% endblock %}
+
+{% block content %}
+<h1>Checkout</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Shipping Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="checkout-form">
+                    {% csrf_token %}
+                    
+                    {% if shipping_addresses %}
+                        <div class="mb-4">
+                            <h6>Use Saved Address</h6>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" name="address_option" id="use_saved" value="saved" {% if default_address %}checked{% endif %} onchange="toggleAddressForm()">
+                                <label class="form-check-label" for="use_saved">
+                                    Use saved shipping address
+                                </label>
+                            </div>
+                            
+                            <div id="saved-address-section" {% if not default_address %}style="display: none;"{% endif %}>
+                                <label for="{{ form.shipping_address.id_for_label }}" class="form-label">Select Address</label>
+                                {{ form.shipping_address }}
+                                {% if default_address %}
+                                    <div class="mt-2 p-3 bg-light rounded">
+                                        <strong>{{ default_address.name }}</strong><br>
+                                        {{ default_address.email }}<br>
+                                        {{ default_address.phone }}<br>
+                                        {{ default_address.address_line_1 }}
+                                        {% if default_address.address_line_2 %}, {{ default_address.address_line_2 }}{% endif %}<br>
+                                        {{ default_address.city }}, {{ default_address.state }} {{ default_address.postal_code }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="radio" name="address_option" id="use_new" value="new" {% if not default_address %}checked{% endif %} onchange="toggleAddressForm()">
+                                <label class="form-check-label" for="use_new">
+                                    Enter new shipping address
+                                </label>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <div id="manual-address-section" {% if default_address %}style="display: none;"{% endif %}>
+                        <h6>Shipping Information</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.shipping_name.id_for_label }}" class="form-label">Full Name</label>
+                                {{ form.shipping_name }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.shipping_email.id_for_label }}" class="form-label">Email</label>
+                                {{ form.shipping_email }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.shipping_phone.id_for_label }}" class="form-label">Phone Number</label>
+                            {{ form.shipping_phone }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.shipping_address.id_for_label }}" class="form-label">Address</label>
+                            {{ form.shipping_address }}
+                        </div>
+                    </div>
+                    
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h6>Payment Method</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="payment_method" id="paystack" value="paystack" checked>
+                                <label class="form-check-label" for="paystack">
+                                    <i class="fas fa-credit-card"></i> Pay with Paystack
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success btn-lg mt-3 w-100">
+                        <i class="fas fa-lock"></i> Place Order & Pay - ${{ total }}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Order Summary</h5>
+            </div>
+            <div class="card-body">
+                {% for item in cart_items %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{{ item.product.name }} x {{ item.quantity }}</span>
+                        <span>${{ item.total_price }}</span>
+                    </div>
+                {% endfor %}
+                <hr>
+                <div class="d-flex justify-content-between">
+                    <strong>Total:</strong>
+                    <strong>${{ total }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleAddressForm() {
+    const useSaved = document.getElementById('use_saved').checked;
+    const savedSection = document.getElementById('saved-address-section');
+    const manualSection = document.getElementById('manual-address-section');
+    
+    if (useSaved) {
+        savedSection.style.display = 'block';
+        manualSection.style.display = 'none';
+        // Clear manual form fields
+        const manualInputs = manualSection.querySelectorAll('input, textarea');
+        manualInputs.forEach(input => input.value = '');
+    } else {
+        savedSection.style.display = 'none';
+        manualSection.style.display = 'block';
+        // Clear saved address selection
+        const savedSelect = document.getElementById('id_shipping_address');
+        if (savedSelect) savedSelect.selectedIndex = 0;
+    }
+}
+
+// Initialize the form state on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const savedRadio = document.getElementById('use_saved');
+    const newRadio = document.getElementById('use_new');
+    
+    if (savedRadio && newRadio) {
+        // Set initial state based on which radio is checked
+        if (savedRadio.checked) {
+            toggleAddressForm();
+        } else if (newRadio.checked) {
+            toggleAddressForm();
+        }
+    }
+});
+</script>
+
+{% endblock %}

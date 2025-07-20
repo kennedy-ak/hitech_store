@@ -1,0 +1,72 @@
+{% extends 'store/base.html' %}
+
+{% block title %}Order Confirmation - HiTech Store{% endblock %}
+
+{% block content %}
+<div class="text-center">
+    <i class="fas fa-check-circle fa-5x text-success mb-3"></i>
+    <h1 class="text-success">Order Confirmed!</h1>
+    <p class="lead">Thank you for your order. Your order number is <strong>#{{ order.id }}</strong></p>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5>Order Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>Order ID:</strong></div>
+                    <div class="col-sm-9">#{{ order.id }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>Date:</strong></div>
+                    <div class="col-sm-9">{{ order.created_at|date:"F d, Y" }}</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>Status:</strong></div>
+                    <div class="col-sm-9">
+                        <span class="badge bg-primary">{{ order.get_status_display }}</span>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-sm-3"><strong>Total:</strong></div>
+                    <div class="col-sm-9"><strong>${{ order.total }}</strong></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>Shipping Information</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>{{ order.shipping_name }}</strong></p>
+                <p>{{ order.shipping_address }}</p>
+                <p>{{ order.shipping_email }}</p>
+                <p>{{ order.shipping_phone }}</p>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>Order Items</h5>
+            </div>
+            <div class="card-body">
+                {% for item in order.items.all %}
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>{{ item.product.name }} x {{ item.quantity }}</span>
+                        <span>${{ item.total_price }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{% url 'home' %}" class="btn btn-primary">Continue Shopping</a>
+            <a href="{% url 'profile' %}" class="btn btn-outline-secondary">View All Orders</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

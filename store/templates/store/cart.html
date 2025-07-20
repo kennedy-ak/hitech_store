@@ -1,0 +1,78 @@
+{% extends 'store/base.html' %}
+
+{% block title %}Shopping Cart - HiTech Store{% endblock %}
+
+{% block content %}
+<h1>Shopping Cart</h1>
+
+{% if cart_items %}
+    <div class="row">
+        <div class="col-md-8">
+            {% for item in cart_items %}
+                <div class="card mb-3">
+                    <div class="row g-0">
+                        <div class="col-md-3">
+                            {% if item.product.image %}
+                                <img src="{{ item.product.image.url }}" class="img-fluid rounded-start" alt="{{ item.product.name }}" style="height: 150px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-light d-flex align-items-center justify-content-center rounded-start" style="height: 150px;">
+                                    <i class="fas fa-image fa-2x text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-9">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ item.product.name }}</h5>
+                                <p class="card-text">${{ item.product.price }} each</p>
+                                <div class="d-flex align-items-center">
+                                    <form method="post" action="{% url 'update_cart' item.id %}" class="me-3">
+                                        {% csrf_token %}
+                                        <div class="input-group" style="width: 120px;">
+                                            <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="form-control form-control-sm">
+                                            <button type="submit" class="btn btn-outline-secondary btn-sm">Update</button>
+                                        </div>
+                                    </form>
+                                    <form method="post" action="{% url 'remove_from_cart' item.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            <i class="fas fa-trash"></i> Remove
+                                        </button>
+                                    </form>
+                                </div>
+                                <p class="mt-2"><strong>Subtotal: ${{ item.total_price }}</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Order Summary</h5>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <span>Total:</span>
+                        <strong>${{ total }}</strong>
+                    </div>
+                    <hr>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'checkout' %}" class="btn btn-primary w-100">
+                            <i class="fas fa-credit-card"></i> Proceed to Checkout
+                        </a>
+                    {% else %}
+                        <p class="text-muted">Please <a href="{% url 'login' %}">login</a> to checkout.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="text-center py-5">
+        <i class="fas fa-shopping-cart fa-5x text-muted mb-3"></i>
+        <h3>Your cart is empty</h3>
+        <p class="text-muted">Start shopping to add items to your cart!</p>
+        <a href="{% url 'home' %}" class="btn btn-primary">Continue Shopping</a>
+    </div>
+{% endif %}
+{% endblock %}
