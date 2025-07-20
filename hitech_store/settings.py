@@ -173,3 +173,7 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=True, cast=bool)
     CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=True, cast=bool)    # Use an official Python runtime as a parent image
    
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://hitech-store.onrender.com",
+]
