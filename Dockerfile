@@ -22,5 +22,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Make port 8000 available to the world outside this container
 EXPOSE 8000
 
-# Run migrations and then start the server
-CMD ["sh", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
+# Run migrations, create superuser, and start the server
+CMD ["sh", "-c", "\
+    python manage.py migrate && \
+    echo \"from django.contrib.auth import get_user_model; \
+    User = get_user_model(); \
+    User.objects.filter(username='admin').exists() or \
+    User.objects.create_superuser('admin', 'admin@example.com', 'adminpass')\" \
+    | python manage.py shell && \
+    python manage.py runserver 0.0.0.0:8000"]
