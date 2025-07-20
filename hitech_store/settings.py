@@ -172,28 +172,4 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
     SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=True, cast=bool)
     CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=True, cast=bool)    # Use an official Python runtime as a parent image
-    FROM python:3.9-slim
-    
-    # Set environment variables
-    ENV PYTHONDONTWRITEBYTECODE 1
-    ENV PYTHONUNBUFFERED 1
-    
-    # Set the working directory in the container
-    WORKDIR /app
-    
-    # Copy the current directory contents into the container at /app
-    COPY . /app
-    
-    # Install system dependencies
-    RUN apt-get update && apt-get install -y \
-        gcc \
-        && rm -rf /var/lib/apt/lists/*
-    
-    # Install Python dependencies
-    RUN pip install --no-cache-dir -r requirements.txt
-    
-    # Make port 8000 available to the world outside this container
-    EXPOSE 8000
-    
-    # Run the application
-    CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+   
