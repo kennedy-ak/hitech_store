@@ -4,13 +4,33 @@ from django.contrib.auth.models import User
 from .models import Order, UserProfile, ShippingAddress
 
 class SignUpForm(UserCreationForm):
-    email = forms.EmailField(required=True)
-    first_name = forms.CharField(max_length=30, required=True)
-    last_name = forms.CharField(max_length=30, required=True)
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Enter your email'})
+    )
+    first_name = forms.CharField(
+        max_length=30,
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First name'})
+    )
+    last_name = forms.CharField(
+        max_length=30,
+        required=True,
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last name'})
+    )
 
     class Meta:
         model = User
         fields = ('username', 'first_name', 'last_name', 'email', 'password1', 'password2')
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Choose a username'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Choose a username'})
+        self.fields['password1'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Enter password'})
+        self.fields['password2'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Confirm password'})
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -36,15 +56,12 @@ class UserProfileForm(forms.ModelForm):
     first_name = forms.CharField(max_length=30, required=False)
     last_name = forms.CharField(max_length=30, required=False)
     email = forms.EmailField(required=True)
-    
+
     class Meta:
         model = UserProfile
-        fields = ['phone', 'date_of_birth', 'profile_picture', 'bio']
+        fields = ['phone']
         widgets = {
             'phone': forms.TextInput(attrs={'class': 'form-control'}),
-            'date_of_birth': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'profile_picture': forms.FileInput(attrs={'class': 'form-control'}),
-            'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
         }
 
     def __init__(self, *args, **kwargs):
