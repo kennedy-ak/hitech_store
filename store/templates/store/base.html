@@ -75,6 +75,13 @@
                     <li class="nav-item">
                         <a class="nav-link px-3" href="{% url 'home' %}">Products</a>
                     </li>
+                    {% if user.is_authenticated and user.is_staff or user.is_superuser %}
+                        <li class="nav-item">
+                            <a class="nav-link px-3 text-purple" href="{% url 'admin_dashboard' %}">
+                                <i class="fas fa-tachometer-alt me-1"></i>Admin Dashboard
+                            </a>
+                        </li>
+                    {% endif %}
                 </ul>
                 <ul class="navbar-nav align-items-center">
                     {% if user.is_authenticated %}

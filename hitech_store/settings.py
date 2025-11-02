@@ -39,11 +39,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     "store"
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -176,4 +178,15 @@ if not DEBUG:
 
 CSRF_TRUSTED_ORIGINS = [
     "https://hitech-store.onrender.com",
+    "https://store.digitalrepublic.space",
+
 ]
+
+# CORS Configuration
+CORS_ALLOWED_ORIGINS = [
+    "https://hitech-store.onrender.com",
+    "https://store.digitalrepublic.space",
+  
+]
+
+CORS_ALLOW_CREDENTIALS = True

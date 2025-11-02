@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Order, UserProfile, ShippingAddress
+from .models import Order, UserProfile, ShippingAddress, Product
 
 class SignUpForm(UserCreationForm):
     email = forms.EmailField(
@@ -109,3 +109,15 @@ class QuickCheckoutForm(forms.Form):
         super().__init__(*args, **kwargs)
         if user:
             self.fields['shipping_address'].queryset = user.shipping_addresses.all()
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ['name', 'description', 'price', 'image', 'stock']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
+            'price': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'image': forms.FileInput(attrs={'class': 'form-control'}),
+            'stock': forms.NumberInput(attrs={'class': 'form-control'}),
+        }

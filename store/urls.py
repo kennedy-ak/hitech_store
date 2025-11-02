@@ -20,5 +20,16 @@ urlpatterns = [
     # Authentication URLs
     path('signup/', views.signup, name='signup'),
     path('login/', auth_views.LoginView.as_view(), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(), name='logout')
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+
+    # Admin Dashboard URLs
+    path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('admin-dashboard/products/', views.admin_products, name='admin_products'),
+    path('admin-dashboard/products/add/', views.admin_add_product, name='admin_add_product'),
+    path('admin-dashboard/products/edit/<int:product_id>/', views.admin_edit_product, name='admin_edit_product'),
+    path('admin-dashboard/products/delete/<int:product_id>/', views.admin_delete_product, name='admin_delete_product'),
+    path('admin-dashboard/orders/', views.admin_orders, name='admin_orders'),
+    path('admin-dashboard/orders/<int:order_id>/', views.admin_order_detail, name='admin_order_detail'),
+    path('admin-dashboard/orders/<int:order_id>/update-status/', views.admin_update_order_status, name='admin_update_order_status'),
+    path('admin-dashboard/low-stock/', views.admin_low_stock, name='admin_low_stock'),
 ]

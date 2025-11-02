@@ -1,13 +1,13 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from django.db.models import Sum
+from django.db.models import Sum, Count
 from django.conf import settings
 from .models import Product, CartItem, Order, OrderItem, UserProfile, ShippingAddress
-from .forms import SignUpForm, CheckoutForm, UserProfileForm, ShippingAddressForm, QuickCheckoutForm
+from .forms import SignUpForm, CheckoutForm, UserProfileForm, ShippingAddressForm, QuickCheckoutForm, ProductForm
 import json
 import requests
 import uuid
@@ -129,7 +129,7 @@ def checkout(request):
             
             order.save()
             
-            # Create order items
+            # Create order items and reduce stock
             for cart_item in cart_items:
                 OrderItem.objects.create(
                     order=order,
@@ -137,6 +137,9 @@ def checkout(request):
                     quantity=cart_item.quantity,
                     price=cart_item.product.price
                 )
+                # Reduce product stock
+                cart_item.product.stock -= cart_item.quantity
+                cart_item.product.save()
             
             # Clear cart
             cart_items.delete()
@@ -343,3 +346,107 @@ def verify_payment(payment_id):
         return data['status'] == 'success'
     else:
         raise Exception("Failed to verify payment")
+
+# Admin Dashboard Views
+def is_admin(user):
+    return user.is_authenticated and (user.is_superuser or user.is_staff)
+
+@user_passes_test(is_admin, login_url='login')
+def admin_dashboard(request):
+    # Get statistics
+    total_products = Product.objects.count()
+    total_orders = Order.objects.count()
+    pending_orders = Order.objects.filter(status='pending').count()
+    low_stock_products = Product.objects.filter(stock__lte=10).count()
+
+    # Recent orders
+    recent_orders = Order.objects.all()[:5]
+
+    # Low stock products
+    low_stock = Product.objects.filter(stock__lte=10)[:5]
+
+    context = {
+        'total_products': total_products,
+        'total_orders': total_orders,
+        'pending_orders': pending_orders,
+        'low_stock_products': low_stock_products,
+        'recent_orders': recent_orders,
+        'low_stock': low_stock,
+    }
+    return render(request, 'store/admin/dashboard.html', context)
+
+@user_passes_test(is_admin, login_url='login')
+def admin_products(request):
+    products = Product.objects.all().order_by('-created_at')
+    return render(request, 'store/admin/products.html', {'products': products})
+
+@user_passes_test(is_admin, login_url='login')
+def admin_add_product(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save()
+            messages.success(request, f'Product "{product.name}" added successfully!')
+            return redirect('admin_products')
+    else:
+        form = ProductForm()
+    return render(request, 'store/admin/product_form.html', {'form': form, 'action': 'Add'})
+
+@user_passes_test(is_admin, login_url='login')
+def admin_edit_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            product = form.save()
+            messages.success(request, f'Product "{product.name}" updated successfully!')
+            return redirect('admin_products')
+    else:
+        form = ProductForm(instance=product)
+    return render(request, 'store/admin/product_form.html', {'form': form, 'action': 'Edit', 'product': product})
+
+@user_passes_test(is_admin, login_url='login')
+@require_POST
+def admin_delete_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    product_name = product.name
+    product.delete()
+    messages.success(request, f'Product "{product_name}" deleted successfully!')
+    return redirect('admin_products')
+
+@user_passes_test(is_admin, login_url='login')
+def admin_orders(request):
+    orders = Order.objects.all().order_by('-created_at')
+    return render(request, 'store/admin/orders.html', {'orders': orders})
+
+@user_passes_test(is_admin, login_url='login')
+def admin_order_detail(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    return render(request, 'store/admin/order_detail.html', {'order': order})
+
+@user_passes_test(is_admin, login_url='login')
+@require_POST
+def admin_update_order_status(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    new_status = request.POST.get('status')
+    if new_status in dict(Order.STATUS_CHOICES):
+        order.status = new_status
+        order.save()
+        messages.success(request, f'Order #{order.id} status updated to {order.get_status_display()}!')
+    else:
+        messages.error(request, 'Invalid status!')
+    return redirect('admin_order_detail', order_id=order.id)
+
+@user_passes_test(is_admin, login_url='login')
+def admin_low_stock(request):
+    low_stock_threshold = request.GET.get('threshold', 10)
+    try:
+        low_stock_threshold = int(low_stock_threshold)
+    except ValueError:
+        low_stock_threshold = 10
+
+    products = Product.objects.filter(stock__lte=low_stock_threshold).order_by('stock')
+    return render(request, 'store/admin/low_stock.html', {
+        'products': products,
+        'threshold': low_stock_threshold
+    })
